@@ -8,9 +8,14 @@ def save_values(todo_list, tdf):
         json.dump(todo_list, f)
 
 def load_values(tdf):
-    with open(tdf, 'r') as f:
-        todo_list = json.load(f)
-    return todo_list
+    try:
+        with open(tdf, 'r') as f:
+            todo_list = json.load(f)
+        return todo_list
+    except:
+        print("Lista de tareas no encontrada, creando una nueva...")
+        save_values({}, tdf)
+        print("Lista creada con éxito.\n")
 
 def menu():
     print('[1] Ver tarea')
