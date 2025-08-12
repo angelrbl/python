@@ -46,11 +46,13 @@ def load_team(data):
 
 # Esta función se encarga de formalizar un pokémon deseado a un objeto
 def convert_pokemon(poke):
-    return Pokemon(poke["name"], poke["id"], poke["types"][0]["type"], user)
+    return Pokemon(poke["name"], poke["id"], poke["types"][0]["type"]["name"], user)
 
 # Esta función se encarga de manejar el encuentro con un pokémon salvaje
 def encounter_poke():
     wild_poke = get_pokemon_info(random.randint(1, 1025))
+    print("\nSearching for wild pokemon...")
+    time.sleep(random.randint(2,7))
     print(f"You {'encountered' if random.randint(1,2) ==  1 else 'found'} a wild {wild_poke['name']}.")
     action = input("Do you want to try and catch this pokémon? (y/n): ")
     match action:
@@ -79,7 +81,6 @@ def catch_pokemon(poke, team):
         if caught == True:
             print(f"Congratulations! You caught a wild pokémon. Welcome to the team, {poke["name"]}!\nGoing back home...")
             pokemon_data.append(convert_pokemon(poke))
-            pokemon_team.append(convert_pokemon(poke))
             save_values(pokemon_data, file_name)
             main()
     else:
@@ -88,33 +89,85 @@ def catch_pokemon(poke, team):
 
 # Esta función se encarga de enseñar el equipo pokémon de un jugador
 def show_team(team):
-    print("Your team:")
-    for poke in team:
-        print(poke.name)
+    if len(team) > 0:
+        print("\nYour team:")
+        for poke in team:
+            print(f"[{team.index(poke)}] {poke.name}")
+    else:
+        print("Sorry, but your team is empty. Going back home...")
+        main()
+    
+# Tras enseñar el equipo del jugador, da la opción de ver cada pokémon individualmente
+def see_team(team):
+    show_team(team)
+    action = input("See info of specific pokémon or press enter to go back home: ")
+    match action:
+        case '':
+            main()
+        case _:
+            if int(action) >= 0 and int(action) < len(team):
+                team[int(action)].showPokemon(team[int(action)].name, team[int(action)].pokeid, team[int(action)].poketype)
+                main()
+            else:
+                print("The slot of the pokémon you introduced does not exist. Going back home...")
+                main()
+
+# Esta funcion te deja liberar un pokémon después de mostrar el equipo
+def release_pokemon(team, data):
+    show_team(team)
+    action = input("Introduce the pokémon you want to release or press enter to go back home: ")
+    match action:
+        case '':
+            main()
+        case _:
+            if int(action) >= 0 and int(action) < len(team):
+                data.remove(team[int(action)])
+                save_values(data, file_name)
+                main()
+            else:
+                print("The slot of the pokémon you introduced does not exist. Going back home...")
+                main()
+
+def introduce_player():
+    return input("Please, type the name of the person who is playing: ")
+
+# Salir del juego, no sin primero guardar
+def exit():
+    save_values(pokemon_data, file_name)
+    print("Alright, see you soon!")
 
 def main():
-    print("Home") 
-    action = input("Do you want to go to the wilderness? (y/n): ")
+    pokemon_team = load_team(pokemon_data)
+    print("\nHome:")
+    print("[1] Go to the wilderness") 
+    print("[2] See your team") 
+    print("[3] Release pokémon") 
+    print("[4] Change player") 
+    print("[0] Exit")
+
+    action = input("What do you want to do?: ")
     match action:
-        case 'y':
+        case "1":
             encounter_poke()
-        case 'team':
-            show_team(pokemon_team)
+        case "2":
+            see_team(pokemon_team)
+        case '3':
+            release_pokemon(pokemon_team, pokemon_data)
+        case '4':
+            user = introduce_player()
             main()
-        case 'clear':
-            clear_values(file_name)
         case _:
             print("Alright, see you soon!")
 
 if __name__ == "__main__":
+    user = introduce_player()
     pokemon_data = load_values(file_name)
-    user = input("Please, type the name of the person who is playing: ")
-    pokemon_team = load_team(pokemon_data)
     main()
 
 # OBJETOS NO SON COMPATIBLES, DEBEMOS IMPORTAR PICKLE PARA PODER GUARDAR OBJETOS -> DONE
-# CREAR UN CLI EN EL QUE PUEDAS IR A LA WILDERNESS Y TRAS ESPERAR UN NÚMERO ALEATORIO DE SEGUNDOS QUE TE APAREZCA UN POKÉMON
+# CREAR UN CLI EN EL QUE PUEDAS IR A LA WILDERNESS Y TRAS ESPERAR UN NÚMERO ALEATORIO DE SEGUNDOS QUE TE APAREZCA UN POKÉMON -> DONE
 # DAR LA OPCIÓN DE CAPTURAR O NO A ESE POKÉMON Y SI ES QUE SÍ QUE HAYA UNA PROBABILIDAD DE ATRAPARLO -> DONE
-# TENER UN EQUIPO DE HASTA 6 POKÉMONS Y DAR LA OPCIÓN DE LIBERAR PARA PODER CAPTURAR NUEVOS Y MEJORES
+# TENER UN EQUIPO DE HASTA 6 POKÉMONS Y DAR LA OPCIÓN DE LIBERAR PARA PODER CAPTURAR NUEVOS Y MEJORES -> DONE
 # CARGAR DIFERENTES PERFILES EN FUNCIÓN DE CADA DUEÑO Y QUE CADA UNO DE ELLOS TENGA SU EQUIPO -> DONE
-# 
+
+# ARREGLAR BUG CUANDO ENSEÑAS EQUIPO SE AÑADEN POKEMONS MOMENTÁNEAMENTE Y LOS PRINTEA CON EL MISMO INDEX. IDEA -> PRINT(POKEMON_TEAM) ->
