@@ -20,7 +20,7 @@ def get_pokemon_info(poke):
         case 404:
             print("Something went wrong while trying to search a pokémon.")
 
-# Estas funciones se encargan de guardar y cargar los cambios.
+# Estas funciones se encargan de guardar, cargar y borrar los cambios.
 def save_values(pokemon_data, file_name):
     with open(file_name, 'wb') as f:
         pickle.dump(pokemon_data, f)
@@ -32,13 +32,15 @@ def load_values(file_name):
     except:
         save_values([], file_name)
 
-def clear_values(file_name):
+def clear_values(file_name, data):
     data = []
     with open(file_name, 'wb') as f:
         pickle.dump(data, f)
+    main()
 
 # esta lógica hace que tras cargar todos los pokémons capturados, solo los que le pertenecen al jugador deseado se carguen en el equipo
 def load_team(data):
+    pokemon_team = []
     for poke in data:
         if poke.owner == user:
             pokemon_team.append(poke)
@@ -51,8 +53,10 @@ def convert_pokemon(poke):
 # Esta función se encarga de manejar el encuentro con un pokémon salvaje
 def encounter_poke():
     wild_poke = get_pokemon_info(random.randint(1, 1025))
-    print("\nSearching for wild pokemon...")
-    time.sleep(random.randint(2,7))
+    print(f"\n{'Searching' if random.randint(1,2) ==  1 else 'Looking'} for wild pokemon...")
+    for i in range(0, random.randint(2,7)):
+        print(".")
+        time.sleep(1)
     print(f"You {'encountered' if random.randint(1,2) ==  1 else 'found'} a wild {wild_poke['name']}.")
     action = input("Do you want to try and catch this pokémon? (y/n): ")
     match action:
@@ -73,7 +77,7 @@ def catch_pokemon(poke, team):
         for i in range(0, 3):
             print('.')
             time.sleep(1)
-            if random.randint(1, 1000) < poke["base_experience"]:
+            if random.randint(1, 2048) < poke["base_experience"]:
                 caught = False
                 print(f"{'The pokémon ran away' if random.randint(1,2) == 1 else 'The pokeball failed to hit the pokémon, and he got scared away'}")
                 main()
@@ -123,13 +127,16 @@ def release_pokemon(team, data):
             if int(action) >= 0 and int(action) < len(team):
                 data.remove(team[int(action)])
                 save_values(data, file_name)
+                print(f"Bye, bye {team[int(action)].name}!")
                 main()
             else:
                 print("The slot of the pokémon you introduced does not exist. Going back home...")
                 main()
 
+# Esta función permite cambiar de jugador en el propio juego
 def introduce_player():
-    return input("Please, type the name of the person who is playing: ")
+    global user # poninedo "global" conseguimos acceder al valor ya creado que se llama "user"
+    user = input("Please, type the name of the person who is playing: ")
 
 # Salir del juego, no sin primero guardar
 def exit():
@@ -154,13 +161,15 @@ def main():
         case '3':
             release_pokemon(pokemon_team, pokemon_data)
         case '4':
-            user = introduce_player()
+            introduce_player()
             main()
+        case 'clear':
+            clear_values(file_name, pokemon_data)
         case _:
             print("Alright, see you soon!")
 
 if __name__ == "__main__":
-    user = introduce_player()
+    introduce_player()
     pokemon_data = load_values(file_name)
     main()
 
@@ -170,4 +179,5 @@ if __name__ == "__main__":
 # TENER UN EQUIPO DE HASTA 6 POKÉMONS Y DAR LA OPCIÓN DE LIBERAR PARA PODER CAPTURAR NUEVOS Y MEJORES -> DONE
 # CARGAR DIFERENTES PERFILES EN FUNCIÓN DE CADA DUEÑO Y QUE CADA UNO DE ELLOS TENGA SU EQUIPO -> DONE
 
-# ARREGLAR BUG CUANDO ENSEÑAS EQUIPO SE AÑADEN POKEMONS MOMENTÁNEAMENTE Y LOS PRINTEA CON EL MISMO INDEX. IDEA -> PRINT(POKEMON_TEAM) ->
+# ARREGLAR BUG CUANDO ENSEÑAS EQUIPO SE AÑADEN POKEMONS MOMENTÁNEAMENTE Y LOS PRINTEA CON EL MISMO INDEX. IDEA -> PRINT(POKEMON_TEAM) -> DONE
+# ARREGLAR BUG NO SE PUEDE CAMBIAR DE JUGADOR -> DONEc
