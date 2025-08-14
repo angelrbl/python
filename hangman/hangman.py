@@ -11,51 +11,36 @@ def load_values(file_name):
     except:
         print("Cannot find a valid word list")
 
-def choose_lang():
+def choose_lang(words):
     lang = input("\nWhat language are you playing in? (en/es): ")
     match lang:
         case 'en':
-            select_lang(words, "en")
+            return [word for word in words.keys() if words.get(word) == 'en']
         case 'es':
-            select_lang(words, "es")
+            return [word for word in words.keys() if words.get(word) == 'es']
         case _:
             print("Invalid input, please try again: ")
-            choose_lang()
+            choose_lang(words)
 
-def select_lang(words, lang):
-    for word in words.keys():
-        if words.get(word) == lang:
-            valid_words.append(word)
-
-
-def choose_dif():
+def choose_dif(words):
     dif = input("\nHow difficult do you want the game to be? (easy/hard/all): ")
     match dif:
         case 'easy':
-            return select_dif(valid_words, 'e')
+            return [word for word in words if len(word) <= 4]
         case 'hard':
-            return select_dif(valid_words, 'h')
+            return [word for word in words if len(word) > 4]
         case 'all':
-            pass
+            return words
         case _:
             print("Invalid input, please try again: ")
-            choose_dif()
-
-def select_dif(words, dif):
-    for word in words:
-        if len(word) > 4:
-            words.remove(word)
-        if len(word) < 4:
-            words.remove(word)
-    return words
+            choose_dif(words)
 
 def game_logic():
     ...
 
 def main():
-    choose_lang()
-    global valid_words
-    valid_words = choose_dif()
+    valid_words = choose_lang(words)
+    valid_words = choose_dif(valid_words)
     print(valid_words)
 
 if __name__ == "__main__":
