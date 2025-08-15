@@ -66,6 +66,8 @@ def game_logic(words, max_strikes):
             print(f"Sorry, but you reach the limit of {max_strikes} strikes, you lost.")
             strikes += 1
             main()
+        if word == guess:
+            strikes = max_strikes + 1
         print(f'{" ".join(guess)}   Strikes: {strikes}/{max_strikes}  Letters tried: {" ".join(used_chars)}\n')
     
     print(f"CONGRATULATIONS, YOU WON!! THE WORD WAS {"".join(word).upper()}. GOING BACK...")
