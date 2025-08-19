@@ -1,0 +1,1022 @@
+
+// public/assets/js/custom/app.js
+
+
+//var trainingApp = angular.module('trainingApp', []); 
+var testOfflineApp = angular.module('testOfflineApp', ['mainService', 'ngSanitize']); 
+
+testOfflineApp.filter('ceil', function() {
+	return function(input) {
+		return Math.ceil(input);
+	};
+});
+
+testOfflineApp.filter('toTrusted', function ($sce) {
+    return function (value) {
+        return $sce.trustAsHtml(value);
+    };
+});
+
+testOfflineApp.directive("globalActions", function ($http,$rootScope) {
+	return {
+		restrict: 'A',
+		scope: true,
+		controller: function ($scope,servicesTests, $interval) {
+			$scope.init = function (data) {
+				if ($(window).width()>600) {
+					$scope.mostrar_mother = 1;
+				} else {
+					$scope.mostrar_mother = 1;
+				}
+				$scope.primer_inicio = true;
+				$scope.ranking_position = [];
+				$scope.ranking_position_move = [];
+				$scope.cargando = true;
+				$scope.cansend = true;
+				setTimeout(function(){ $scope.renewToken(); }, 3000000);
+
+				$scope.blocked = false;
+				$scope.resultado_error = false;
+				$scope.renewTokenError = 0;
+				$scope.usuarioCaducado = false;
+				$scope.mostrarlogin = false;
+				$scope.mostrar_ajustes = false;
+
+				$scope.ver_hijas = ($('#ver_hijas_value').val()=="true");
+				$scope.contestar_preguntas_hijas = ($('#contestar_preguntas_hijas_value').val()=="true");
+				$scope.ocultar_respuestas_incorrectas = ($('#ocultar_respuestas_incorrectas_value').val()=="true");
+				$scope.ver_distractoras = ($('#ver_distractoras_value').val()=="true");
+				$scope.ver_distractoras_hijas = ($('#ver_distractoras_hijas_value').val()=="true");
+				$scope.contestar_para_comprobar = ($('#contestar_para_comprobar_value').val()=="true");
+				$scope.contestar_modotnt = ($('#contestar_modotnt_value').val()=="true");
+
+				$scope.id_user = $('#id').val();
+
+				$scope.ver_libro = false;
+
+				$scope.keyboardoff = false;
+				$scope.viendo_explicacion = false;
+				$scope.comprobar = false;
+				$scope.contestadas = [];
+				$scope.acertadas = [];
+				$scope.tests_array = [];
+				$scope.respuestas_info = [];
+				$scope.acertaste = 0;
+				$scope.competition = $('#competition').val();
+				$scope.elements_array = [];
+				$scope.num_tests_array = [];
+				$scope.modo_repaso = $('#repaso').val();
+				$scope.estudio = $('#estudio').val();
+				$scope.mm_access = data.mm_access;
+				$scope.mm_image = data.mm_image;
+				$scope.refsPubliTestArray = data.refsPubliTestArray;
+				$scope.streaming=0;
+				
+				if ($scope.modo_repaso) {
+					$rootScope.modo = 3;
+				} else if ($scope.estudio) {
+					$rootScope.modo = 1;
+				} else {
+					$rootScope.modo = 2;
+				}
+
+				var currentdate = new Date();
+				$scope.dateInit =  currentdate.getFullYear() + "-" + (currentdate.getMonth()+1) + "-" + currentdate.getDate() + " " + (currentdate.getHours()) + ":" + (currentdate.getMinutes()) + ":" + (currentdate.getSeconds())
+				$scope.bPreguntar = false;
+				$scope.isFinish = false;
+				$scope.result = {'totales':0,'aciertos':0,'fallos':0,'porcentaje':0};
+				$scope.statusTest = $('#TradConectado').val();
+
+				$scope.url_estadisticas = data.url_estadisticas;
+				$scope.url_testoffline = data.url_testoffline;
+				$scope.url_repaso = data.url_repaso;
+				$scope.url_tests = data.url_tests;
+				window.onbeforeunload = $scope.preguntarAntesDeSalir;
+
+
+				$scope.interval = $interval(callAtTimeout, 3000);
+
+				$scope.testResponseNoSend = [];
+				$(document).on('keydown',function(e){
+					if ($scope.keyboardoff==false && (!$('#content_test').val() || $('#content_test').val()=="1")) {
+						if (!$scope.blocked) {
+							if ((e.which == '65' || e.which == '49' || e.which == '97') && $scope.currentTest.opciones[0]){
+								if ($scope.contestar_modotnt) {
+									$scope.addResponse($scope.currentTest.opciones[0].opcion);
+								} else {
+									$scope.sendResponse({'response':$scope.currentTest.opciones[0].opcion,'test_id':$scope.currentTest.preguntaCodigo,'isKeyboard':true}); 
+								}
+							} else if ((e.which == '66' || e.which == '50' || e.which == '98') && $scope.currentTest.opciones[1]){
+								if ($scope.contestar_modotnt) {
+									$scope.addResponse($scope.currentTest.opciones[1].opcion);
+								} else {
+									$scope.sendResponse({'response':$scope.currentTest.opciones[1].opcion,'test_id':$scope.currentTest.preguntaCodigo,'isKeyboard':true});
+								}
+							} else if ((e.which == '67' || e.which == '51' || e.which == '99') && $scope.currentTest.opciones[2]){
+								if ($scope.contestar_modotnt) {
+									$scope.addResponse($scope.currentTest.opciones[2].opcion);
+								} else {
+									$scope.sendResponse({'response':$scope.currentTest.opciones[2].opcion,'test_id':$scope.currentTest.preguntaCodigo,'isKeyboard':true});
+								}
+							} else if ((e.which == '68' || e.which == '52' || e.which == '100') && $scope.currentTest.opciones[3]){
+								if ($scope.contestar_modotnt) {
+									$scope.addResponse($scope.currentTest.opciones[3].opcion);
+								} else {
+									$scope.sendResponse({'response':$scope.currentTest.opciones[3].opcion,'test_id':$scope.currentTest.preguntaCodigo,'isKeyboard':true});
+								}
+							}
+						}
+						if (e.which == '32'){
+							if ($scope.contestar_modotnt) {
+								$scope.comprobare($scope.currentTest.preguntaCodigo);
+							}
+						}
+						if (e.which == '70'){
+							if (!$scope.estudio || $scope.modo_repaso || $scope.contestadas.length>=$scope.tests.preguntas.length*0.9) {
+								$scope.finishTest();
+							}
+						}
+						if ($scope.isFinish) {
+							if (e.which == '82'){ $scope.repeat_test($scope.url_testoffline); }
+							if (e.which == '83'){
+								$scope.next_test($scope.url_testoffline);
+								//$scope.init({'familia':$rootScope.data.familia,'numTest': $scope.tests.info.nexttest,'url_estadisticas':$scope.url_estadisticas,'url_testoffline':$scope.url_testoffline,'url_tests':$scope.url_tests});
+							}
+						}
+						if (e.which == '37' || e.which == '33') {
+							if ($('#auto_iniciado').val()!=1 || $('#esalumno').val()==0) {
+								$scope.backQuestion(true);
+								$scope.cerrar_explicacion();
+							}
+						}
+						if (e.which == '39' || e.which == '34') {
+							if ($('#auto_iniciado').val()!=1 || $('#esalumno').val()==0) {
+								$scope.nextQuestion(true);
+								$scope.cerrar_explicacion();
+							}
+						}
+						if ($scope.estudio || $scope.modo_repaso) {
+							if (e.which == '77' && $("#accept_questions").val()=="1") {
+								$scope.teacherMessage();
+							}
+							if (e.which == '69' && $scope.currentTest.texts!='') {
+								$scope.ver_explicacion();
+							}
+							if (e.which == '27') { $scope.cerrar_explicacion();}
+						}
+					}
+				});
+				$rootScope.data = data;
+				$scope.position = 0;
+				var familias_120=["65","66","96","97","98","99","764","766"];
+				var familias_60=["85","86","87","88","89"];
+				if (familias_120.indexOf($rootScope.data.familia)!=-1) {
+					$scope.timeExam = '120';
+				} else if (familias_60.indexOf($rootScope.data.familia)!=-1) {
+					$scope.timeExam = '60';
+				} else {
+					$scope.timeExam = 0;
+				}
+				servicesTests.getTestFamily()
+				.then(function (result) {
+					$scope.message = 'la promesa se ha resuelto';
+					$scope.tests = result;
+					$scope.loadtest();
+					$scope.initTimer();
+					$("#auto_test").val(result.numTest);
+				})
+			}
+
+			$scope.loadtest = function( repeat )
+			{
+				if (!repeat) {
+					var repeat=false;
+				}
+				if (document.getElementById("counter")!=null) {
+					document.getElementById("counter").innerHTML = "";
+				}
+
+				if ($scope.tests.status == 1) {
+					window.location.replace($scope.url_tests);
+					//history.go(-1);
+					//alert("error")
+				} else {
+					if (typeof $scope.tests.preguntas=="undefined") {
+						if ($('#auto_iniciado').val() != null) {
+							setTimeout(function(){ window.location.reload(); }, 5000);
+						}
+						$('.ng-scope').html("<div style='margin-top:60px;'>"+$("#TradNoHayPreg").val()+"</div>");
+						$scope.currentTest = true;
+						$scope.isFinish = true;
+						$scope.cargando = false;
+					} else {
+						$('#preguntas').val($scope.tests.preguntas.length);
+						if ($scope.timeExam==0) {
+							$scope.timeExam=$scope.tests.preguntas.length;
+						}
+						for (var i = 0; i < $scope.tests.preguntas.length; i++) {
+							if ($scope.tests.preguntas[i].respuesta) {
+								$scope.contestadas.push(i);
+							}
+							if (repeat) {
+								delete $scope.tests.preguntas[i].respuesta;
+							}
+						}
+						for (var i = 0; i < $scope.tests.preguntas.length; i++) {
+							if (!$scope.tests.preguntas[i].respuesta) {
+								$scope.position = i;
+								$scope.currentTest = $scope.tests.preguntas[i];
+								$scope.mother = $scope.currentTest.preguntaCodigo;
+								if ($scope.currentTest.foto64) {
+									$scope.currentTest.foto64 = ($scope.currentTest.foto64.indexOf("data:image/png;base64, ") == -1 ? "data:image/png;base64, " + $scope.currentTest.foto64 : $scope.currentTest.foto64);
+								}
+								break;
+							}
+						}
+						if (!$scope.currentTest) {
+							$scope.currentTest = $scope.tests.preguntas[0];
+							$scope.mother = $scope.currentTest.preguntaCodigo;
+							$scope.currentTest.foto64 = ($scope.currentTest.foto64.indexOf("data:image/png;base64, ") == -1 ? "data:image/png;base64, " + $scope.currentTest.foto64 : $scope.currentTest.foto64);
+						};
+						$scope.currentTest.numTest = $scope.tests.numTest;
+					}
+					$scope.cargando = false;
+					$scope.message = 'la promesa se ha resuelto';
+
+					var num_tests_array_temp=$scope.num_tests_array;
+					var tests_array_temp=$scope.tests_array;
+					$scope.tests_array = [];
+					$scope.num_tests_array = [];
+					$scope.tests_array_descargados = 0;
+					for (var i = 0; i < $scope.tests.next_tests.length; i++) {
+						var position = num_tests_array_temp.indexOf($scope.tests.next_tests[i]);
+						if (position>=0) {
+							if (tests_array_temp[num_tests_array_temp[position]]) {
+								$scope.tests_array[tests_array_temp[num_tests_array_temp[position]].numTest]=tests_array_temp[num_tests_array_temp[position]];
+								$scope.tests_array_descargados++;
+								$scope.num_tests_array.push($scope.tests.next_tests[i]);
+							}
+						} else {
+							$scope.num_tests_array.push($scope.tests.next_tests[i]);
+							servicesTests.getTestFamily($scope.tests.next_tests[i])
+							.then(function (result) {
+								$scope.tests_array[result.numTest]=result;
+								$scope.tests_array_descargados++;
+							})				
+							.catch(function (message) {
+								$scope.message = 'la promesa se ha rechazado';
+							});
+						}
+					}
+				}
+			}
+
+			$scope.teacherMessage = function()
+			{
+				if ($scope.cansend) {
+					$scope.keyboardoff=!$scope.keyboardoff;
+					$(".panel_msg").slideToggle("slow");
+					$("#writemessage").val("");
+					$("#writemessage").focus();
+					$("#print").html("");
+					setTimeout(function(){ $("#writemessage").val(""); }, 50);
+				}
+			}
+
+			$scope.sendTeacherMessage = function()
+			{
+				setTimeout(function(){ $scope.teacherMessage(); }, 1000);
+			}
+
+			$scope.preguntarAntesDeSalir = function()
+			{
+				if ($scope.bPreguntar)
+					return "Tienes respuestas pendientes de enviar y puedes perder respuestas del test.";
+			}
+
+			$scope.ver_explicacion = function()
+			{
+				$scope.viendo_explicacion=!$scope.viendo_explicacion;
+				if ($(window).width()>590) {
+					if (!$scope.viendo_explicacion) {
+						closecloudpopup();
+					} else {
+						$scope.ver_texto_inicio();
+						cloudpopup('.textwrapper_pop');
+					}
+				} else {
+					$('.textwrapper_pop').toggle();
+				}
+			}
+
+			$scope.cerrar_explicacion = function()
+			{
+				$scope.viendo_explicacion=false;
+				if ($(window).width()>590) {
+					closecloudpopup();
+				}
+			}
+
+			$scope.ver_videoclase = function()
+			{
+				$("iframe#vimeovideo").attr("src", "https://player.vimeo.com/video/"+$(".ver_videoclase").attr("id")+"?autoplay=0&title=0&byline=0&portrait=0&loop=0");
+				$("iframe#vimeovideo").height($("body").width()*0.3 + 'px');
+				$("iframe#vimeovideo").width($("body").width()*0.3*16/9 + 'px');
+				$(".explicacion_videoclase").show();
+				$(".explicacion_texto").hide();
+				$(".line_video").css("background","grey");
+				$(".line_text").css("background","white");
+			}
+
+			$scope.ver_texto_inicio = function()
+			{
+				$("iframe#vimeovideo").attr("src",'');
+				$(".explicacion_videoclase").hide();
+				$(".explicacion_texto").show();
+				$(".line_text").css("background","grey");
+				$(".line_video").css("background","white");
+			}
+
+			$scope.initTimer = function (isKeyboard) {
+				if ($('#test_ajax').val()!="1") {
+					$scope.conteo = new Date($scope.timeExam * 60000);
+					$scope.intervaloRegresivo = $interval(regresivas, 1000);
+				}
+			}
+
+			function regresivas() {
+				$scope.conteo.setTime($scope.conteo.getTime() - 1000);
+				if($scope.conteo.getTime() < 0){
+					//clearInterval($scope.intervaloRegresivo);
+					if (document.getElementById("counter")!=null) {
+						document.getElementById("counter").innerHTML = "<div style='background-color: #ff8000;'>Se ha superado el límite máximo de tiempo para realizar el examen.</div>";
+					}
+				} else if (!$scope.isFinish && document.getElementById('cuenta')!=null && $scope.conteo.getHours()>1) {
+					document.getElementById('cuenta').childNodes[0].nodeValue = 
+					("0" + ($scope.conteo.getHours()-1)).slice(-2) + ":" + ("0" + $scope.conteo.getMinutes()).slice(-2) + ":" + ("0" + $scope.conteo.getSeconds()).slice(-2);
+				} else if (!$scope.isFinish && document.getElementById('cuenta')!=null) {
+					document.getElementById('cuenta').childNodes[0].nodeValue = 
+					("0" + $scope.conteo.getMinutes()).slice(-2) + ":" + ("0" + $scope.conteo.getSeconds()).slice(-2);
+				};
+			}
+
+			function callAtTimeout() {
+				$interval.cancel($scope.interval);
+				if ($scope.testResponseNoSend.length > 0 ) {
+					servicesTests.sendTest($scope.testResponseNoSend[0])
+					.then(function (result) {
+						if (result.status == 0) {
+							$scope.testResponseNoSend.splice(0, 1);
+							$scope.connectionOk();
+							$scope.interval = $interval(callAtTimeout, 3000);
+						} else {
+							$scope.connectionError();
+							$scope.renewToken();
+						}
+					})
+					.catch(function (message) {
+						console.log(message);
+						$scope.connectionError();
+						if (message=='Invalid credentials.') {
+							$scope.renewToken();
+						} else {
+							$scope.interval = $interval(callAtTimeout, 30000);
+						}
+					});
+				} else {
+					$scope.statusTest = $('#TradConectado').val();
+					$scope.interval = $interval(callAtTimeout, 3000);
+					$scope.bPreguntar = false;
+				}
+			}
+
+			$scope.connectionError = function () {
+				$scope.message = 'la promesa se ha rechazado';
+				$scope.statusTest = $('#TradSinConexin').val();
+				if ($scope.cansend) {
+					$scope.cansend = false;
+					if ($rootScope.data.familia!=135) {
+						$("a").each(function() {
+							if ($(this).attr("href")!="undefined") {
+								$(this).attr("hrf",$(this).attr("href"));
+								$(this).attr("title","No es posible salir en estos momentos de la página ya que la conexión con el servidor está experimentando problemas.");
+								$(this).removeAttr("href");
+								$(this).css("cursor","not-allowed");
+							}
+						});
+						$('.notondisconnect').css("cursor","not-allowed");
+					}
+				}
+			}
+
+			$scope.ingame = function () {
+				$("a").each(function() {
+					if ($(this).attr("href")!="undefined") {
+						$(this).attr("hrf",$(this).attr("href"));
+						$(this).attr("title","Estas en un juego, debes finalizar para poder salir.");
+						$(this).removeAttr("href");
+						$(this).css("cursor","not-allowed");
+					}
+				});
+				$(".questionsnav a").each(function() {
+					$(this).attr("href",$( this ).attr("hrf"));
+					$(this).css("cursor","pointer");
+					$(this).removeAttr("title");
+				});
+				$(".avisos_a").each(function() {
+					$(this).attr("href",$( this ).attr("hrf"));
+					$(this).css("cursor","pointer");
+					$(this).removeAttr("title");
+				});
+				$('.notondisconnect').css("cursor","not-allowed");
+			}
+
+			$scope.offgame = function () {
+				$(".gameactions a").each(function() {
+					$(this).attr("href",$( this ).attr("hrf"));
+					$(this).css("cursor","pointer");
+					$(this).removeAttr("title");
+				});
+				$('.notondisconnect').css("cursor","not-allowed");
+			}
+
+			$scope.connectionOk = function () {
+				$scope.statusTest = $('#TradSincronizando').val()+"...";
+				if (!$scope.cansend) {
+					$scope.cansend = true;
+					$("a").each(function() {
+						$(this).attr("href",$( this ).attr("hrf"));
+						$(this).css("cursor","pointer");
+						$(this).removeAttr("title");
+					});
+					$('.notondisconnect').css("cursor","pointer");
+				}
+			}
+
+			$scope.nextQuestion = function (isKeyboard) {
+				if ($scope.position != ($scope.tests.preguntas.length)-1) {
+					$scope.position = parseInt($scope.position) + 1;
+					$scope.changeQuestions($scope.position);
+					if (isKeyboard) {
+						this.$apply();
+					};
+				} else if ($('#content_test').val() && $('#content_test').val()=="1") {
+					//get_mm($('.next_id').attr("id"));
+				}
+				$scope.blocked = false;
+			}
+
+			$scope.backQuestion = function (isKeyboard) {
+				if ($scope.position != 0) {
+					$scope.position = parseInt($scope.position) - 1;
+					$scope.changeQuestions($scope.position);
+					if (isKeyboard) {
+						this.$apply();
+					};
+				} else if ($('#tnt_position').val()) {
+					//get_mm($('.prev_id').attr("id"));
+				}
+				$scope.blocked = false;
+			}
+
+			$scope.mostrarPreguntas = function () {
+				$('.questionsnav').toggle();
+				$scope.mostrar_mother=0;
+			}
+
+			$scope.mostrarHijas = function () {
+				$('.questionsnav').hide();
+				$scope.mostrar_mother=!$scope.mostrar_mother;
+			}
+
+			$scope.comprobare = function (preguntaCodigo) {
+				$scope.comprobar = true;
+				$scope.respuestas_correctas=[];
+				$scope.correcto=true;
+				$scope.send_response=-1;
+
+				var respuesta_temp=0;
+				var respuesta_correcta=0;
+				for (var i = 0; i < $scope.currentTest.opciones.length; i++) {
+					if ($scope.currentTest.opciones[i].respuestaSN<0) {
+						$scope.respuestas_correctas.push(""+(i+1)+"");
+						if ($scope.currentTest.respuestas.indexOf(""+(i+1)+"")<0) {
+							$scope.correcto=false;
+						} else {
+							respuesta_correcta=i+1;
+						}
+					} else {
+						if ($scope.currentTest.respuestas.indexOf(""+(i+1)+"")>=0) {
+							respuesta_temp=i+1;
+						}
+					}
+				}
+				if (respuesta_temp==0) {
+					respuesta_temp=respuesta_correcta;
+				}
+				if ($scope.currentTest.respuestas.length!=$scope.respuestas_correctas.length) {
+					$scope.correcto=false;
+				}
+
+				if ($scope.currentTest.respuestas.length==0 || !$scope.correcto) {
+					$scope.send_response=0;
+				} else if ($scope.correcto) {
+					$scope.send_response=$scope.respuestas_correctas[0];
+				}
+				$scope.sendResponse({'response':$scope.send_response,'test_id':preguntaCodigo,'isKeyboard':false});
+				$scope.currentTest.respuesta=respuesta_temp;//Pruebo para que se muestren las hijas. $scope.send_response; Si hay incorrectas rojo y no verde
+			}
+
+			$scope.addResponse = function ( option ) {
+				if (!$scope.comprobar) {
+					if (typeof $scope.currentTest.respuestas=='undefined') {
+						$scope.currentTest.respuestas=[];
+					}
+					var index=$scope.currentTest.respuestas.indexOf(option);
+					if (index==-1) {
+						$scope.currentTest.respuestas.push(option);
+					} else {
+						$scope.currentTest.respuestas.splice(index, 1);
+					}
+				}
+			}
+
+			$scope.heDudado = function () {
+				$scope.testResponseNoSend.push($('meta[name="url"]').attr('content')+"/addattribute/notsure_"+$rootScope.data.familia+'/'+$scope.currentTest.preguntaCodigo+"/1");
+				setTimeout(function(){ $scope.nextQuestion(); }, 100);
+			}
+
+			$scope.sendResponse = function ( params ) {
+				if (!$scope.blocked && !$scope.modo_repaso && (!$('#auto_iniciado').val() || !$('#auto_iniciado').val()==1 || !$('#esalumno').val())) {
+					$scope.blocked = true;
+					setTimeout(function(){ $scope.blocked = false; }, 2000);
+
+					if ($scope.contestadas.indexOf($scope.position)==-1 || !$scope.estudio) {
+						// this
+							if ((typeof $('meta[name="mmref"]').attr('content'))=="undefined") {
+								$scope.bPreguntar = true;
+								$scope.testResponseNoSend.push($('meta[name="url"]').attr('content')+"/api/check/"+$rootScope.data.familia+'/'+$rootScope.data.numTest+"/"+params.test_id+"/0/1/"+$rootScope.modo+"?intento="+$scope.tests.info.intento+"&response="+params.response);
+							}
+							$scope.currentTest.respuesta = params.response;
+
+							if ($('#directchangequest').val() && $rootScope.data.familia!=135 && ($rootScope.data.familia<110000 || $rootScope.data.familia>120000)) {
+								setTimeout(function(){ $scope.nextQuestion(); }, 100);
+							}
+							if (params.isKeyboard) {
+								this.$apply();
+							};
+						//}
+						$scope.contestadas.push($scope.position);
+						if ($scope.currentTest.opciones[params.response-1].respuestaSN != 0) {
+							$scope.acertadas.push($scope.position);
+						}
+					}
+				} else if ($('#auto_iniciado').val() == 1) {
+					if ($scope.contestadas.indexOf($scope.position)==-1) {
+						$scope.currentTest.respuesta = params.response;
+						$scope.contestadas.push($scope.position);
+						if (params.isKeyboard) {
+							this.$apply();
+						};
+						$("#auto_pregunta").val($scope.currentTest.preguntaCodigo);
+						$("#auto_respuesta").val(params.response);
+						addResponse();
+					}
+				}
+			}
+
+			$scope.changeQuestions = function ( index, teachers, counter ) {
+				// this
+				$scope.position = index;
+				if (typeof $scope.tests!=='undefined') {
+					if ($scope.competition="1" && parseInt($('#profesor_jugador').val())>0) {
+						$scope.getRankingPositions();						
+					}
+					$scope.currentTest = $scope.tests.preguntas[$scope.position];
+					$scope.mother = $scope.currentTest.preguntaCodigo;
+					$scope.currentTest.foto64 = ($scope.currentTest.foto64.indexOf("data:image/png;base64, ") == -1 ? "data:image/png;base64, " + $scope.currentTest.foto64 : $scope.currentTest.foto64);
+					$scope.comprobar = false;
+					if ($('#auto_iniciado').val() == 1) {
+						$("#auto_pregunta").val($scope.currentTest.preguntaCodigo);
+						$("#auto_index").val(index);
+						for (var i = 0; i < $scope.currentTest.opciones.length; i++) {
+							if ($scope.currentTest.opciones[i].respuestaSN=="-1") {
+								$("#auto_respuesta_correcta").val(i+1);
+							}
+						}
+						if (typeof teachers=='undefined') {
+							changeQuestion();
+						}
+						if (typeof $scope.elements_array[index]!=='undefined') {
+							$scope.sendResponse($scope.elements_array[index]);
+						} else {
+							showAlert();
+						}
+						fincargando();
+					}
+				} else {
+					if (typeof counter!=='undefined') { counter=counter+1; } else { counter=0; }
+					if (counter<5) {
+						setTimeout(function(){$scope.changeQuestions(index, teachers, counter);},1000);
+					}
+				}
+			}
+			
+			$scope.change_question = function ( ) {
+				var newindexquestion = $('#auto_change_question').val();
+				$scope.changeQuestions(parseInt(newindexquestion));
+				if (typeof $scope.currentTest!=='undefined' && typeof $scope.currentTest.respuesta!=='undefined' && typeof $scope.elements_array[newindexquestion]!=='undefined' && typeof $scope.elements_array[newindexquestion].response!=='undefined') {
+					$scope.sendResponse($scope.elements_array[newindexquestion]);
+				}
+			}
+
+			$scope.change_question_2_teachers = function ( ) {
+				var newindexquestion = $('#auto_change_question').val();
+				$scope.changeQuestions(parseInt(newindexquestion),1);
+			}
+
+			$scope.pintarResultados = function () {
+				$('#auto_block_pintar').val("1");
+
+				var array_respuestas = JSON.parse($('#auto_respuestas_info').val());
+				$scope.array_bloqueados = JSON.parse($('#auto_bloqueados').val());
+				var respuestas_info_pre = [];
+				var num_usuarios = 0;
+				var index=0;
+				var indexposition=-1;
+				var esalumno = parseInt($('#esalumno').val());
+				var profesor_jugador = parseInt($('#profesor_jugador').val());
+				var respuestas_correctas_info = [];
+				var contestados = [];
+
+				array_respuestas.forEach(function(element) {
+					if ($scope.array_bloqueados.indexOf(element.user_id)>=0) {
+						//No hago nada con los bloqueados
+					} else if (typeof element.iscorrect!=='undefined' && typeof element.hello=='undefined' && typeof element.streaming=='undefined') {
+						var points_user=0
+						var corrects_user=0
+						index=element.pregunta;
+						if (typeof contestados[index]=='undefined') {
+							contestados[index]=[];
+							indexposition++;
+							if (parseInt(element.index)>parseInt(indexposition)) {
+								indexposition=element.index;
+							}
+						}
+
+						if (typeof respuestas_correctas_info[element.user_id+'_'+index]=='undefined') {
+							//OJO Cambiar también nuevo_juego.blade.php
+							//registro la respuesta para no aceptar dos respuestas del mismo usuario
+							respuestas_correctas_info[element.user_id+'_'+index]=0;
+							if (contestados[index].indexOf(element.user_id)<0) {
+								contestados[index].push(element.user_id);
+							}
+							//Calculo los puntos. Si me dice menos de 50 milisegundos lo tomo como error. Lo maximo a sumar por puntos con 0,2
+							if (element.iscorrect==1) {
+								points_user=1;
+								if (element.time!=null) {
+									if (element.time<1000) {
+										element.time=1000;
+									}
+									points_user=1+(100/parseInt(element.time));
+								}
+								corrects_user=1;
+								respuestas_correctas_info[element.user_id+'_'+index]=1;
+							}
+							//Añado la info y diferencio la primera vez del resto de veces
+							if (typeof respuestas_info_pre[element.user_id]!=='undefined') {
+								respuestas_info_pre[element.user_id].points=respuestas_info_pre[element.user_id].points+points_user;
+								respuestas_info_pre[element.user_id].totals=respuestas_info_pre[element.user_id].totals+1;
+								if (points_user>0) {
+									respuestas_info_pre[element.user_id].corrects=respuestas_info_pre[element.user_id].corrects+1;
+								}
+							} else {
+								var nuevo_usuario={author:element.author,points:points_user,corrects:corrects_user,totals:1,user_id:element.user_id,indice:index};
+								num_usuarios=num_usuarios+1;
+								respuestas_info_pre[element.user_id]=nuevo_usuario;
+							}
+							element.response=element.respuesta;
+							element.isKeyboard=0;
+							if (element.user_id==document.getElementById('id').value) {
+								$scope.elements_array[index]=element;
+								if (index==document.getElementById('auto_index').value) {
+									$scope.sendResponse($scope.elements_array[index]);
+								}
+							}
+						}
+					} else if (typeof element.author!=='undefined' && typeof element.hello!='undefined') {
+						var nuevo_hello={author:element.author,points:0,corrects:0,totals:0,user_id:element.user_id,indice:0};
+						if (typeof respuestas_info_pre[element.user_id]=='undefined') {
+							respuestas_info_pre[element.user_id]=nuevo_hello;
+							num_usuarios=num_usuarios+1;
+						}
+					} else if (typeof element.streaming!='undefined' && $scope.streaming!=element.streaming) {
+						$('#show_streaming').append('<iframe id="streaming_url" width="560" height="315" src="https://www.youtube.com/embed/'+element.streaming+'?controls=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>');
+						$('.show_streaming').show();
+						$scope.streaming=element.streaming;
+					}
+				});
+
+				$scope.respuestas_info=[];
+				$scope.num_usuarios_juego=num_usuarios;
+				$scope.respuestas_correctas_info=respuestas_correctas_info;
+
+				respuestas_info_pre.forEach(function(element) {
+					$scope.respuestas_info.push(element);
+				});
+
+				if (profesor_jugador>0) {
+					var auto_automatic_pass = 1;
+					num_usuarios=profesor_jugador;
+				} else {
+					var up_names = document.getElementsByName('auto_automatic_pass');
+					if (typeof up_names[0]!='undefined') {
+						var auto_automatic_pass = up_names[0].value;
+					} else {
+						var auto_automatic_pass = 0;
+					}
+				}
+				if (esalumno==0 || profesor_jugador>0) {
+					if (num_usuarios > 0 && typeof contestados[index]!='undefined' && contestados[index].length == num_usuarios && auto_automatic_pass==1 && (parseInt(indexposition)+1)<$scope.tests.preguntas.length) {
+						/*$scope.nextQuestion();*/
+						$scope.changeQuestions(parseInt(indexposition)+1);
+					} else if (indexposition>0 && typeof contestados[index]!='undefined' && contestados[index].length == num_usuarios && index!=$("#auto_pregunta").val() && $scope.primer_inicio) {
+						$scope.primer_inicio = false;
+						$scope.changeQuestions(parseInt(indexposition));
+					} else if (num_usuarios > 0 && typeof contestados[index]!='undefined' && contestados[index].length == num_usuarios && auto_automatic_pass==1 && profesor_jugador>0) {
+						finGame();
+					}
+				}
+
+				fincargando();
+				$('#auto_block_pintar').val("0");
+			}
+
+			$scope.getRankingPositions = function () {
+				if ($scope.competition!="1" || !parseInt($('#profesor_jugador').val())>0) {
+					$scope.acertaste=0;
+				}
+				if ((parseInt($('#esalumno').val())>0 || parseInt($('#profesor_jugador').val())>0) && typeof $scope.currentTest!="undefined" && typeof $scope.currentTest.respuesta!="undefined") {
+					if ($scope.currentTest.respuesta==document.getElementById('auto_respuesta_correcta').value) {
+						$scope.acertaste=1;
+					} else if ($scope.currentTest.respuesta!="") {
+						$scope.acertaste=2;
+					}
+				}
+				$scope.respuestas_info.sort((a, b) => (a.points < b.points) ? 1 : -1)
+				var position=0;
+				$scope.respuestas_info.forEach(function(element) {
+					position+=1;
+					if (typeof $scope.ranking_position[element.user_id]!=='undefined') {
+						if ($scope.ranking_position[element.user_id]<position) {
+							$scope.ranking_position_move[element.user_id] = 'down';
+						} else if ($scope.ranking_position[element.user_id]>position) {
+							$scope.ranking_position_move[element.user_id] = 'up';
+						} else {
+							$scope.ranking_position_move[element.user_id] = 'same';
+						}
+					}
+					if (position==1) {
+						$('#ganador').val(element.user_id);
+						$('#ganador_pts').val(element.points);
+					} else if (position==2) {
+						$('#segundo').val(element.user_id);
+						$('#segundo_pts').val(element.points);
+					} else if (position==3) {
+						$('#tercero').val(element.user_id);
+						$('#tercero_pts').val(element.points);
+					}
+					$scope.ranking_position[element.user_id]=position;
+				});
+				$scope.$apply();
+				if (parseInt($('#esalumno').val())>0 || parseInt($('#profesor_jugador').val())>0) {
+					document.getElementById('ranking_content').classList.add("ranking_intermedio");
+					setTimeout(function(){ document.getElementById('ranking_content').classList.remove("ranking_intermedio"); }, 1000);
+				}
+			}
+
+			$scope.changeQuestionsHija = function ( mother, index ) {
+				// this
+				$scope.positionhija = index;
+				$scope.mother = mother;
+				$scope.currentTest = $scope.tests.hijas[$scope.mother][$scope.positionhija];
+				$scope.currentTest.hija = 1;
+				$scope.currentTest.foto64 = ($scope.currentTest.foto64.indexOf("data:image/png;base64, ") == -1 ? "data:image/png;base64, " + $scope.currentTest.foto64 : $scope.currentTest.foto64);
+			}
+
+			$scope.finishTest = function () {
+		        if ($('meta[name="mmref"]').attr('content')) {
+		        	close();
+		        } else if ($scope.modo_repaso) {
+		        	$scope.next_test($scope.url_repaso);
+		        	//window.history.back();
+		        } else {
+					try{
+						$scope.cargando = true;
+
+						$scope.dataSend = [];
+						var currentdate = new Date();
+						$scope.dataSend.fin =  currentdate.getFullYear() + "-" + (currentdate.getMonth()+1) + "-" + currentdate.getDate() + " " + (currentdate.getHours()) + ":" + (currentdate.getMinutes()) + ":" + (currentdate.getSeconds())
+						$scope.dataSend.datetime = $scope.dateInit;
+						$scope.dataSend.intento = $scope.tests.info.intento;
+						$scope.dataSend.duracion = Math.round(60*($scope.timeExam-($scope.conteo.getTime()/60000)));
+						$scope.dataSend.respuestas = [];
+						for (var i = 0; i < $scope.tests.preguntas.length; i++) {
+							$scope.dataSend.respuestas.push({'preguntaCodigo': $scope.tests.preguntas[i].preguntaCodigo,'respuesta': $scope.tests.preguntas[i].respuesta});
+						};
+
+						var url=$('meta[name="url"]').attr('content')+"/api/testresult?numFamilia="+$rootScope.data.familia+"&numTest="+$rootScope.data.numTest+"&fin="+$scope.dataSend['fin']+"&datetime="+$scope.dataSend['datetime']+"&duracion="+$scope.dataSend['duracion']+"&intento="+$scope.dataSend['intento']+"&modo="+$rootScope.modo;
+
+						servicesTests.finishTest(url, {"respuestas":JSON.stringify($scope.dataSend['respuestas'])})
+						.then(function (result) {
+							if ($('#directchangetest').val()=="1" && $scope.data.numTest.substr(0,1)==$scope.tests.info.nexttest.substr(0,1)) {
+								$scope.next_test($scope.url_testoffline);
+							} else {
+								$scope.result = result.result;
+								$scope.isFinish = true;
+								$scope.cargando = false;
+								$scope.testResponseNoSend = [];
+								var familias_cap=JSON.parse($('#familias_cap').val());
+								if (familias_cap.indexOf(parseInt($rootScope.data.familia,10))!=-1 && $scope.result.resultado>=0.5*$scope.result.totales && $scope.result.fallos == 0){
+									$scope.resultsrc='/assets/images/verde_01.gif';
+									$scope.resultrtext=$('#TradMuyBien').val();
+									$scope.resultalt='Apto';
+									setTimeout(function(){ $('.num_resultados').show('slow');$scope.resultsrc='/assets/images/verde_03.gif'},2500);
+								} else if (familias_cap.indexOf(parseInt($rootScope.data.familia,10))!=-1 && $scope.result.resultado>=0.5*$scope.result.totales){
+									$scope.resultsrc='/assets/images/ambar_01.gif';
+									$scope.resultrtext=$('#TradNoMal').val();
+									$scope.resultalt='Apto';
+									setTimeout(function(){ $('.num_resultados').show('slow');$scope.resultsrc='/assets/images/ambar_01.gif'},2500);
+								} else if (familias_cap.indexOf(parseInt($rootScope.data.familia,10))!=-1 && $scope.result.resultado<0.5*$scope.result.totales){
+									$scope.resultsrc='/assets/images/rojo_01.gif';
+									$scope.resultrtext=$('#TradNoListo').val();
+									$scope.resultalt='No Apto';
+									setTimeout(function(){ $('.num_resultados').show('slow');$scope.resultsrc='/assets/images/rojo_03.gif'},2500);
+								} else if ($scope.result.totales == $scope.result.aciertos) {
+									$scope.resultsrc='/assets/images/verde_01.gif';
+									$scope.resultrtext=$('#TradMuyBien').val();
+									$scope.resultalt='Apto';
+									setTimeout(function(){ $('.num_resultados').show('slow');$scope.resultsrc='/assets/images/verde_03.gif'},2500);
+								} else if ((Math.ceil($scope.result.totales*$scope.result.porcentaje) <= $scope.result.aciertos) && ($scope.result.totales != $scope.result.aciertos)) {
+									$scope.resultsrc='/assets/images/ambar_01.gif';
+									$scope.resultrtext=$('#TradNoMal').val();
+									$scope.resultalt='Apto';
+									setTimeout(function(){ $('.num_resultados').show('slow');$scope.resultsrc='/assets/images/ambar_03.gif'},2500);
+								} else if (Math.ceil($scope.result.totales*$scope.result.porcentaje) > $scope.result.aciertos) {
+									$scope.resultsrc='/assets/images/rojo_01.gif';
+									$scope.resultrtext=$('#TradNoListo').val();
+									$scope.resultalt='No Apto';
+									setTimeout(function(){ $('.num_resultados').show('slow');$scope.resultsrc='/assets/images/rojo_03.gif'},2500);
+								}
+							}
+							$scope.resultado_error = false;
+
+							/*if (params.isKeyboard) {
+								this.$apply();
+							};*/
+							//$scope.testResponseNoSend.splice(0, 1);
+						})
+						.catch(function (message) {
+							$scope.message = 'la promesa se ha rechazado';
+							$scope.isFinish = true;
+							$scope.cargando = false;
+							$scope.resultsrc='';
+							$scope.resultado_error = true;
+			                $scope.testResponseNoSend.push(url);
+						});
+					} catch (err) { console.log(err.name + ': "' + err.message +  '" occurred when assigning x.');}
+				}
+			}
+
+			$scope.showImage = function ( params ) {
+				// this
+				if (params.type == "desktop") {
+					if (params.action == "show") {
+						$('#imagewrapper_pop_'+$scope.currentTest.foto).css("display","inline-block");
+						$('#imagewrapper_pop_'+$scope.currentTest.foto+'_black').css("display","inline-block");
+					} else if (params.action == "hide") {
+						$('#imagewrapper_pop_'+$scope.currentTest.foto).css("display","none");
+						$('#imagewrapper_pop_'+$scope.currentTest.foto+'_black').css("display","none");
+					};
+				} else if (params.type == "mobile") {
+					if (params.action == "show") {
+						$('#imagewrapper_'+$scope.currentTest.foto+'_mobile').css("display","none");
+						$('#imagewrapper_pop_'+$scope.currentTest.foto+'_mobile').css("display","inline-block");
+					} else if (params.action == "hide") {
+						$('#imagewrapper_'+$scope.currentTest.foto+'_mobile').css("display","inline-block");
+						$('#imagewrapper_pop_'+$scope.currentTest.foto+'_mobile').css("display","none");
+					};
+				};
+			}
+
+
+			$scope.result_statistics = function ( params ) {
+				if ($scope.cansend) {
+					//window.ga('send', 'pageview', { page: $location.url() });
+					window.location.replace(params+"/"+$rootScope.data.familia+"/"+$rootScope.data.numTest);
+				} else {
+					alert("No es posible ver las estadísticas en estos momentos.");
+				}
+			}
+
+			$scope.next_test = function ( params ) {
+				if ($scope.tests_array.length>0) {
+					var finished=false;
+					for (var i = 0; i < $scope.num_tests_array.length; i++) {
+						if ($scope.tests_array[$scope.num_tests_array[i]] && !finished) {
+							$scope.tests = $scope.tests_array[$scope.num_tests_array[i]];
+							$rootScope.data.numTest = $scope.tests.numTest;
+							$scope.nexttest = $scope.tests.numTest;
+							$scope.loadtest();
+							$scope.conteo = new Date($scope.timeExam * 60000);
+							$scope.isFinish = false;
+							$scope.contestadas = [];
+							var i = 0;
+							$scope.tests.preguntas.forEach(function(element) {
+								if (typeof element.respuesta!="undefined") {
+									$scope.contestadas.push(i);
+								}
+								i++;
+							});
+							finished=true;
+						}
+					}
+				}
+
+				if (!finished && $scope.cansend) {
+					//alert(params+"/"+$rootScope.data.familia+"/"+$scope.tests.info.nexttest);
+					//window.ga('send', 'pageview', { page: $location.url() });
+					window.location.replace(params+"/"+$rootScope.data.familia+"/"+$scope.tests.info.nexttest);
+				} else if (!finished) {
+					alert('Ya no quedan tests descargados y sigues sin conexión. Necesitarás volver a conectarte para seguir trabajando y recuerda esperar una vez conectado para que se suban todos tus resultados.');
+				}
+			}
+
+			$scope.repeat_test = function ( params ) {
+				//Quitamos la opción de repetir un test en offline, hay que recargar
+				//$scope.tests.info.intento=0;
+				//$scope.loadtest(true);
+				//$scope.contestadas = [];
+				//$scope.conteo = new Date($scope.timeExam * 60000);
+				//$scope.isFinish = false;
+
+				//window.ga('send', 'pageview', { page: $location.url() });
+				//window.location.replace(params+"/"+$rootScope.data.familia+"/"+$rootScope.data.numTest);
+			}
+
+		    $scope.renewToken = function ( ) {
+				$interval.cancel($scope.intervalrenewToken);
+				servicesTests.renewToken()
+				.then(function (result) {
+					if (result.status==1) {
+						$scope.usuarioCaducado = true;
+						$scope.intervalrenewToken = $interval($scope.renewToken, 30000);
+					} else {
+						$scope.usuarioCaducado = false;
+						$scope.interval = $interval(callAtTimeout, 3000);
+						$('meta[name="csrf-token"]').attr('content',result.message)
+					}
+				})
+				.catch(function (message) {
+					$scope.intervalrenewToken = $interval($scope.renewToken, 120000);
+					$scope.message = 'server error';
+				});
+		    }
+
+			$scope.change_service = function (service) {
+				$scope[service]=!$scope[service];
+				$('#'+service+'_value').val($scope[service]);
+				if (service=='ver_libro' && $scope[service] && $scope.currentTest.refLibroPubliUrl) {
+					$('#vermanualpublitas').html('<iframe src="'+$scope.currentTest.refLibroPubliUrl+'" class="libro_iframe"></iframe>');
+				} else if (service=='ver_libro' && $scope[service]) {
+					$('#vermanualpublitas').html('<iframe src="https://view.publitas.com/aeol-service-sl/'+$scope.currentTest.refLibroPubli+'/" class="libro_iframe"></iframe>');
+				} else if (service=='ver_libro') {
+					$('#vermanualpublitas').html('');
+				}
+			}
+		}
+	};
+});
+
+
+// public/assets/js/custom/app.js
+
+
+//var trainingApp = angular.module('trainingApp', []); 
+//var testsApp = angular.module('testsApp', ['mainService']); 
+testOfflineApp.directive("testsView", function ($http,$rootScope) {
+	return {
+		restrict: 'A',
+		scope: true,
+		controller: function ($scope,servicesTests, $interval) {
+			$scope.init = function (familias) {
+				$scope.argumentsData = {};
+				$scope.argumentsData.familiasFilter = familias;
+				$scope.argumentsData.familias = familias;
+				$scope.argumentsData.isOpenList = false;
+			}
+			
+		}
+	};
+});
+

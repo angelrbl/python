@@ -1,0 +1,481 @@
+.test-content {
+	color: #333;
+}
+.boto_gran_tests {
+	background: transparent url(http://www.autoaula.com/media/css/img/alumnes/boto_tests.png) no-repeat;
+}
+.boto_gran {
+	background-position: 0px 0px;
+	width: 280px;
+	height: 280px;
+	float: left;
+}
+.boto_gran:hover{
+	background-position:-280px 0px;
+	width:280px;
+	height:280px;
+	float: left;
+}
+
+.questionsnav .btn, .tests_grid .btn {
+	width: 80px !important;
+}
+
+.btn, .namesize {
+	min-width: 30px;
+
+	font-weight: bold;
+	width: 46px;
+	height: 38px;
+	text-align: center;
+	color: #333;
+	font-size: 22px;
+	border: 2px solid #BEBEBE;
+	margin-left: 8px;
+	/*background-color: #FFFFFF;*/
+	display: block;
+	float: left;
+	/*border-radius: 5px;*/
+	line-height: 37px;
+	/*box-shadow: 2px 2px 2px #CBCBCB;*/
+	margin-bottom: 4px;
+	border-radius: 6px;
+}
+
+.correct {
+	color: #FFFFFF;
+	background-color: #42A60D;
+}
+.incorrect {
+	color: #FFFFFF;
+	background-color: #C94139;
+}
+.almost {
+	color: #FFFFFF;
+	background-color: #FF8000;
+}
+.selected {
+	border: 2px solid #0063A6;
+	color: #0063A6;
+	text-decoration: underline;
+}
+.tests_grid {
+	padding:10px 0px;
+	display: inline-block;
+	background-color: white;
+}
+.answer {
+	width: 80%;
+	box-shadow: none;
+	border: none;
+	font-size: 16px;
+	line-height: 25px;
+	height: auto;
+	text-align: left;
+	margin-top: 10px;
+	margin-left: 5px;
+}
+.answer1::before {
+	content: url('http://www.autoaula.com/media/css/img/radiobutton_test_1.gif');
+    float: left;
+}
+.answer2::before {
+	content: url('http://www.autoaula.com/media/css/img/radiobutton_test_2.gif');
+    float: left;
+}
+.answer3::before {
+	content: url('http://www.autoaula.com/media/css/img/radiobutton_test_3.gif');
+    float: left;
+}
+.answer4::before {
+	content: url('http://www.autoaula.com/media/css/img/radiobutton_test_4.gif');
+    float: left;
+}
+.answer_correct::before {
+	content: url('http://www.autoaula.com/media/css/img/boton_correcta.gif');
+    float: left;
+}
+.answer_incorrect::before {
+	content: url('http://www.autoaula.com/media/css/img/boton_incorrecta.gif');
+    float: left;
+}
+.answered::before {
+	content: url('http://www.autoaula.com/media/css/img/radiobutton_test_ok.gif');
+    float: left;
+}
+.qnum {
+	font-size: 2.8em;
+	color: #134D7D;
+	font-weight: bold;
+	float: left;
+	max-width: 630px;
+}
+
+.question {
+	padding-left: 2%;
+	float: left;
+	width: 55%;
+	position: relative;
+}
+
+.questionsnav {
+	background-color: #F1F1F1;
+	clear: both;
+	border: 1px solid #D9D9D9;
+	padding: 15px;
+	overflow: auto;
+}
+
+.imagewrapper {
+	display: inline-block;
+	background-color: #E2E2E2;
+	border-radius: 6px;
+	padding: 8px;
+	/*margin-top: 20px;*/
+	cursor: pointer;
+	width: 240px;
+	height: 200px;
+}
+
+.questionsnav a.qanswered {
+	background-color: #ff8000;
+}
+.navbuttons {
+	clear: both;
+	margin-top: 110px;
+}
+.btn_back {
+	width: 93px;
+	height: 56px;
+	background-image: url(http://www.autoaula.com/media/css/img/boton_anterior.gif);
+}
+
+.btn_next {
+	width: 321px;
+	height: 56px;
+	background-image: url(http://www.autoaula.com/media/css/img/boton_siguiente.gif);
+}
+
+.btn_finalize {
+	width: 151px;
+	height: 56px;
+	background-image: url(http://www.autoaula.com/media/css/img/boton_final_test.gif);
+}
+
+@media (max-width: 404px){
+	.tests .tests_grid > .btn {
+		width: 28% !important;
+	}
+}
+@media (max-width: 590px){
+	.config_cookies_action {
+		display: none;
+	}
+	.btn_next {
+		width: 200px;
+		height: 56px;
+		background-image: url(http://www.autoaula.com/media/css/img/boton_siguiente.gif);
+		background-size: 200px 56px;
+	}
+	.left_section, .question {
+		width: 98% !important;
+	}
+	.navbuttons {
+		position: fixed !important;
+	    background-color: #333;
+	    width: 100%;
+	    bottom: 0;
+	    margin-left: -25px;
+	    padding: 3px;
+	    padding-left: 7px;
+	    padding-top: 6px;
+	    margin-bottom: 0px;
+	}
+	.navbuttons > div > div,.navbuttons > div > a > div,.navbuttons > div > span, #volver > a {
+	    color: #fff !important;
+	    border: 0px !important;
+	    max-width: 10%;
+	    margin-right: 9%;
+	    margin-left: 0px !important;
+    }
+    #volver {
+	    margin-top: 0px !important;
+    }
+    .navbuttons .qnum,.navbuttons .fa-3x  {
+	    font-size: 2.3em !important;
+	}
+	.navbuttons .qnum {
+		margin-top: -5px;
+	}
+	.navbuttons #siguiente > span,.navbuttons #anterior > span,.navbuttons .finalizar > div,.navbuttons #volver span {
+		display: none;
+	}
+	.navbuttons .finalizar > i {
+	    margin-top: -7px;
+	}
+	.navbuttons .finalizar {
+		float: right !important;
+		margin-right: 10px !important;
+	}
+	.navbuttons #anterior {
+		/*margin-left: 20%;*/
+	}
+}
+.imagewrapper_pop {
+	z-index: 99999;
+	max-width: 95%;
+	max-height: 95%;
+	margin-top: 50px;
+	display: none;
+}
+
+/* Pestañas */
+
+.familias {
+	max-height: 230px;
+	overflow: auto;
+}
+.tabs_menu {
+	position: absolute;
+	top: -15px;
+	right: 0px;
+	width:300px;
+	padding-left: 0px;
+}
+
+.tabs_menu > li:hover {
+	background-color: black !important;
+}
+
+.tabs > li.active {
+	padding-top: 4px;
+}
+
+.tabs > li.tax {
+	list-style: none;
+	position: relative;
+	margin-bottom: 1px;
+}
+.tab_main {
+	height: 56px;
+	text-transform: uppercase;
+	color: #fff;
+	background-color: #222;
+	padding-top: 10px;
+	padding-top: 3px;
+}
+.familias {
+	display:none;
+	clear:both;
+	margin-left:-40px;
+}
+
+.tabs > li.active a, .tabs > li:hover a {
+	background-color: #fff;
+	color: #4d4d4d;
+}
+.tabs > li.active a {
+	padding-top: 3px !important;
+}
+
+.tabs > li > a {
+	font-weight: bold;
+	font-size: 12px;
+	height: 60px;
+	text-transform: uppercase;
+	color: #fff;
+	background-color: #939393;
+	text-align: center;
+	display: block;
+	font-weight: bold;
+	text-decoration: none;
+	padding-top: 10px;
+}
+
+.tests .tabs_menu_mobile {
+	display: none;
+	width: 300px;
+	display: none;
+}
+.tests .open-menu-test {
+	height: 35px;
+	background-color: #000;
+	background-position: right;
+	background-size:  50px auto;
+	position: fixed;
+	right: 0px;
+	width: 20%;
+	z-index: 99998;
+	font-weight: bold;
+	padding-top: 15px;
+}
+
+@media (min-width: 649px){
+	.tests .open-menu-test-mobile, .close-menu-test-mobile {
+		display: none;
+	}
+}
+@media (max-width: 480px){
+	.tests .tabs_menu_mobile {
+		width: 150px;
+	}
+}
+@media (max-width: 590px){
+	.mobile-tests {
+		display: inline-block;
+	}
+	.no-mobile-tests {
+		display: none;
+	}
+	.imagewrapper {
+		width: auto;
+		height: 30px;
+		margin-top: 0px;
+	}
+}
+@media (min-width: 591px){
+	.mobile-tests {
+		display: none;
+	}
+	.no-mobile-tests {
+		display: inline-block;
+	}
+}
+@media (max-width: 650px){
+	.tests .open-menu {
+		width: 100%;
+	}
+	.tests .open-menu-test-mobile {
+		display: block;
+	}
+	.tests .tabs_menu_web {
+		display: none;
+	}
+	.tests_grid {
+		margin-right:0px;
+	}
+	.imagewrapper_pop {
+		z-index: 99999;
+		max-width: 100%;
+		max-height: 100%;
+		margin-top: 0px;
+		display: none;
+	}
+	.wellcome {
+		padding-top: 5px;
+	}
+}
+@media (min-width: 650px){
+	.tests .tabs_menu_mobile {
+		display: block;
+	}
+	.tests .tabs_menu_mobile {
+		display: none;
+		width: 300px;
+		top: -16px;
+		background-color: #000;
+	}
+	.tests .tabs_menu_web {
+		display: block;
+	}
+}
+@media (max-width: 800px){
+	.tests .tabs_menu_web, .tests .tabs_menu_mobile {
+		padding-top: 50px;
+	}
+	.left_section, .question {
+		height: auto !important;
+	}
+	.navbuttons {
+		position: relative;
+	}
+}
+@media (max-width: 850px){
+	.finalizar {
+    	margin-left: 30px;
+	}
+}
+@media (min-width: 850px){
+	.finalizar {
+		margin-left:96px;
+	}
+}
+
+.fa-A:before {
+	font-family: 'Muli';
+	content: "\0041";
+}
+
+.fa-B:before {
+	font-family: 'Muli';
+	content: "\0042";
+}
+
+.fa-C:before {
+	font-family: 'Muli';
+	content: "\0043";
+}
+
+.fa-D:before {
+	font-family: 'Muli';
+	content: "\0044";
+}
+
+.fa-E:before {
+	font-family: 'Muli';
+	content: "\0045";
+}
+
+.fa-F:before {
+	font-family: 'Muli';
+	content: "\0046";
+}
+
+.fa-G:before {
+	font-family: 'Muli';
+	content: "\0047";
+}
+
+.fa-H:before {
+	font-family: 'Muli';
+	content: "\0048";
+}
+
+.fa-check {
+	color:#42A60D;
+}
+
+.fa-times {
+	color:red;
+}
+
+.texto-respuesta {
+	margin-left: 55px;
+	margin-top: 6px;
+}
+
+.pendent {
+	color:#ff8000 !important;
+}
+
+@media (max-width: 410px){
+	.finalizar {
+		margin-left:14px;
+	}
+	.title-menu {
+		margin-right: 50px !important;
+	}
+}
+.inactive_cross {
+	display: none;
+}
+.inactive:hover {
+}
+
+.title-menu {
+	margin-right: 100px;
+}
+
+.clickable .finalizar, .clickable .fa-A:before, .clickable .fa-B:before, .clickable .fa-C:before, .clickable .fa-D:before, .clickable .texto-respuesta {
+	cursor: pointer;
+}

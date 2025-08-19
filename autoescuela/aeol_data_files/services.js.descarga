@@ -1,0 +1,158 @@
+angular.module('mainService', [])
+
+.factory('servicesTests', function($http, $q, $rootScope) {  
+    
+    return {
+        getTestFamily: getTestFamily,
+        sendTest: sendTest,
+        finishTest: finishTest,
+        renewToken: renewToken,
+        get: get,
+        // POST
+        post: post,
+        // PUT
+        put: put,
+        // DELETE
+        del: del
+    };
+
+    function getTestFamily (test) {
+        var defered = $q.defer();
+        var promise = defered.promise;
+        if (!test) {
+            test=$rootScope.data.numTest;
+        }
+        var url = $('meta[name="url"]').attr('content')+'/api/test/'+$rootScope.data.familia+'/'+test+"/"+$rootScope.modo;
+        if ($('#numPreg').val()) {
+            url=url+"/"+$('#numPreg').val();
+        }
+        url=url+"?_token="+$('meta[name="csrf-token"]').attr('content');
+        if ($('meta[name="mmref"]').attr('content')) {
+            url = $('meta[name="url"]').attr('content')+'/api/test_ref/'+$('meta[name="mmref"]').attr('content')+'/'+$('meta[name="mmpermiso"]').attr('content')+"/1/"+$rootScope.data.familia;
+            if ($('#numpreguntas').val()) {
+                url=url+"/"+$('#numpreguntas').val();
+            }
+            url = url+"?_token="+$('meta[name="csrf-token"]').attr('content');
+        }
+
+        $http.post(url+"&date="+Date.now())
+            .success(function(data) {
+                defered.resolve(data);
+            })
+            .error(function(err) {
+                defered.reject(err)
+            });
+
+        return promise;
+    };
+
+    function sendTest (url) {
+        var defered = $q.defer();
+        var promise = defered.promise;
+        $http.post(url+"&_token="+$('meta[name="csrf-token"]').attr('content'))
+            .success(function(data) {
+                defered.resolve(data);
+            })
+            .error(function(err) {
+                defered.reject(err)
+            });
+
+        return promise;
+    };
+
+    function finishTest (url, respuestas) {
+        var defered = $q.defer();
+        var promise = defered.promise;
+
+        $http.post(url+"&_token="+$('meta[name="csrf-token"]').attr('content'), respuestas)
+            .success(function(data) {
+                defered.resolve(data);
+            })
+            .error(function(err) {
+                defered.reject(err)
+            });
+
+        return promise;
+    };
+
+    function renewToken () {
+        var defered = $q.defer();
+        var promise = defered.promise;
+        $http.get($('meta[name="url"]').attr('content')+"/api/renew_token")
+            .success(function(data) {
+                defered.resolve(data);
+            })
+            .error(function(err) {
+                defered.reject(err)
+            });
+
+        return promise;
+    };
+    // PUT
+    function put(arguments)
+    {
+        var defered = $q.defer();
+        var promise = defered.promise;
+
+        $http({
+            method: 'PUT',
+            data: {
+                'arguments': arguments
+            },          
+            url: arguments.url,
+        }).success(function (result) {
+            defered.resolve(result);
+        }).error(function (error) {
+            defered.reject(error);
+        });
+        return promise;
+    }
+    // GET
+    function get (url) {
+        var defered = $q.defer();
+        var promise = defered.promise;
+
+        $http({
+            method: 'GET',
+            url: url,
+        }).success(function (result) {
+            defered.resolve(result);
+        }).error(function (error) {
+            defered.reject(error);
+        });
+        return promise;
+    }
+
+    // POST
+    function post(arguments) {
+        var defered = $q.defer();
+        var promise = defered.promise;
+        $http({
+            method: 'POST',
+            data: {
+                'arguments': arguments
+            },
+            url: arguments.url,
+        }).success(function (result) {
+            defered.resolve(result);
+        }).error(function (error) {
+            defered.reject(error);
+        });
+        return promise;
+    }
+
+    // DELETE
+    function del(arguments) {
+        var defered = $q.defer();
+        var promise = defered.promise;
+        $http({
+            method: 'DELETE',
+            url: arguments.url + "?id=" + arguments.id,
+        }).success(function (result) {
+            defered.resolve(result);
+        }).error(function (error) {
+            defered.reject(error);
+        });
+        return promise;
+    }
+});
