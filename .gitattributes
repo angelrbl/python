@@ -1,2 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+autoescuela/aeol_data.html linguist-vendored
+autoescuela/aeol_data_files/* linguist-vendored
